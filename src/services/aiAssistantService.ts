@@ -68,21 +68,21 @@ export class AIAssistantService {
     // -------------------------------------------------------------
     if (geminiKey && !geminiKey.includes('tu_clave')) {
       try {
-        Logger.info('[A2A Router] Intentando con Proveedor 1: Google Gemini 2.0 Flash...');
+        Logger.info('[A2A Router] Intentando con Proveedor 1: Google Gemini 1.5 Flash...');
         const res = await this.queryGemini(prompt, defaultSystem, geminiKey);
         if (res) {
-          fallbackChain.push('Gemini-2.0-Flash (Éxito)');
+          fallbackChain.push('Gemini-1.5-Flash (Éxito)');
           return {
             text: res,
             provider: 'Google AI Studio',
-            model: 'Gemini 2.0 Flash',
+            model: 'Gemini 1.5 Flash',
             latencyMs: Date.now() - startTime,
             fallbackChain
           };
         }
       } catch (err: any) {
         Logger.warn(`[A2A Router] Fallo en Gemini (${err?.message || 'Error'}). Activando fallback a Groq...`);
-        fallbackChain.push(`Gemini (Fallo: ${err?.message || '429/Timeout'})`);
+        fallbackChain.push(`Gemini (Fallo: ${err?.message || 'Error'})`);
       }
     } else {
       fallbackChain.push('Gemini (Sin API Key configurada)');
@@ -161,10 +161,8 @@ export class AIAssistantService {
     };
   }
 
-  // --- ADAPTADORES DE PROVEEDORES ---
-
   private static async queryGemini(prompt: string, system: string, apiKey: string): Promise<string | null> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000); // 12s timeout
 
