@@ -68,14 +68,14 @@ export class AIAssistantService {
     // -------------------------------------------------------------
     if (geminiKey && !geminiKey.includes('tu_clave')) {
       try {
-        Logger.info('[A2A Router] Intentando con Proveedor 1: Google Gemini 1.5 Flash...');
+        Logger.info('[A2A Router] Intentando con Proveedor 1: Google Gemini 3.5 Flash Lite...');
         const res = await this.queryGemini(prompt, defaultSystem, geminiKey);
         if (res) {
-          fallbackChain.push('Gemini-1.5-Flash (Éxito)');
+          fallbackChain.push('Gemini-3.5-Flash-Lite (Éxito)');
           return {
             text: res,
             provider: 'Google AI Studio',
-            model: 'Gemini 1.5 Flash',
+            model: 'Gemini 3.5 Flash Lite',
             latencyMs: Date.now() - startTime,
             fallbackChain
           };
@@ -162,7 +162,8 @@ export class AIAssistantService {
   }
 
   private static async queryGemini(prompt: string, system: string, apiKey: string): Promise<string | null> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000); // 12s timeout
 
