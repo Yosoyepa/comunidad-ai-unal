@@ -1,0 +1,33 @@
+{
+  "name": "proyecto-comunidad-ai-discord",
+  "version": "1.0.0",
+  "description": "Aprovisionamiento automatizado, configuración de permisos y gobernanza para un servidor de Discord enfocado en Comunidad de Inteligencia Artificial",
+  "main": "dist/provision.js",
+  "scripts": {
+    "start": "ts-node src/bot.ts",
+    "bot": "ts-node src/bot.ts",
+    "feed:arxiv": "ts-node src/cron/arxivFeed.ts",
+    "build": "tsc",
+    "provision": "ts-node src/provision.ts",
+    "provision:clean": "ts-node src/provision.ts --clean-defaults",
+    "test:connection": "ts-node src/testConnection.ts"
+  },
+  "keywords": [
+    "discord",
+    "discordjs",
+    "ai-community",
+    "automod",
+    "provisioning"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

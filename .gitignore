@@ -1,0 +1,80 @@
+# OS / file manager clutter
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100/
+.Trashes/
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and runtime files
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.out
+*.err
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.example.*
+*.local
+
+# Dependency caches and virtual environments
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+.yarn-cache/
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+
+.venv/
+venv/
+env/
+.tox/
+.nox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build outputs and package artifacts
+build/
+dist/
+coverage/
+site/
+*.egg-info/
+*.egg
+
+# Compiled objects and archives
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.class
+*.jar
+*.war
+*.nar
+*.zip
+*.tar
+*.gz
+*.bz2
+*.7z
+*.rar
