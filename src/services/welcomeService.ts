@@ -1,5 +1,6 @@
 import { Guild, TextChannel, EmbedBuilder, ChannelType } from 'discord.js';
 import { Logger } from '../utils/logger';
+import { TicketHandler } from '../handlers/ticketHandler';
 
 export class WelcomeService {
   /**
@@ -135,6 +136,21 @@ export class WelcomeService {
         Logger.success(`Recursos publicados en #${resourcesChannel.name}`);
       } else {
         Logger.info(`El canal #${resourcesChannel.name} ya contiene mensajes. Se omite duplicado.`);
+      }
+    }
+
+    // 4. ABRIR TICKET
+    const ticketChannel = channels.find(
+      (c) => c && c.type === ChannelType.GuildText && c.name.includes('abrir-ticket')
+    ) as TextChannel | undefined;
+
+    if (ticketChannel) {
+      const messages = await ticketChannel.messages.fetch({ limit: 5 });
+      if (messages.size === 0) {
+        Logger.info(`Publicando panel de tickets en #${ticketChannel.name}...`);
+        await TicketHandler.postTicketPanel(ticketChannel);
+      } else {
+        Logger.info(`El canal #${ticketChannel.name} ya contiene mensajes. Se omite duplicado.`);
       }
     }
   }

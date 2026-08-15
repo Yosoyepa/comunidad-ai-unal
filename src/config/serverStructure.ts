@@ -591,6 +591,25 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
         type: ChannelType.GuildText,
         topic: 'Comparte tus mejores system prompts, técnicas de few-shot, reasoning chains y jailbreaks defensivos.',
         rateLimitPerUser: 5
+      },
+      {
+        name: '🎫┃abrir-ticket',
+        type: ChannelType.GuildText,
+        topic: 'Canal oficial para solicitar tickets privados de soporte, mentoría técnica o consultas con el equipo.',
+        permissionOverwrites: [
+          {
+            roleName: '@everyone',
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.ReadMessageHistory
+            ],
+            deny: [
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.CreatePublicThreads,
+              PermissionFlagsBits.CreatePrivateThreads
+            ]
+          }
+        ]
       }
     ]
   },
