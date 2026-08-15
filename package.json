@@ -7,6 +7,7 @@
     "start": "ts-node src/bot.ts",
     "bot": "ts-node src/bot.ts",
     "feed:arxiv": "ts-node src/cron/arxivFeed.ts",
+    "refresh:panels": "ts-node src/refreshPanels.ts",
     "build": "tsc",
     "provision": "ts-node src/provision.ts",
     "provision:clean": "ts-node src/provision.ts --clean-defaults",

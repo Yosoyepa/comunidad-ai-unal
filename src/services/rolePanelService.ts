@@ -14,9 +14,9 @@ import { Logger } from '../utils/logger';
 
 export class RolePanelService {
   /**
-   * Publica o actualiza los paneles interactivos de auto-asignación de roles en #bienvenida-y-roles.
+   * Publica o refresca los paneles interactivos de auto-asignación de roles en #bienvenida-y-roles.
    */
-  public static async postInteractiveRolePanels(guild: Guild): Promise<void> {
+  public static async postInteractiveRolePanels(guild: Guild, forceRefresh = false): Promise<void> {
     Logger.info('Preparando paneles interactivos de selección de roles...');
 
     const channels = await guild.channels.fetch();
@@ -29,7 +29,19 @@ export class RolePanelService {
       return;
     }
 
-    Logger.info(`Publicando paneles interactivos en #${welcomeChannel.name}...`);
+    if (forceRefresh) {
+      Logger.info(`Limpiando mensajes anteriores en #${welcomeChannel.name} para actualización de paneles...`);
+      try {
+        const oldMessages = await welcomeChannel.messages.fetch({ limit: 20 });
+        for (const [, msg] of oldMessages) {
+          await msg.delete();
+        }
+      } catch (err) {
+        Logger.warn('Error al limpiar mensajes previos de bienvenida:', err);
+      }
+    }
+
+    Logger.info(`Publicando paneles interactivos (con multi-selección) en #${welcomeChannel.name}...`);
 
     // -------------------------------------------------------------
     // PANEL 1: ESPECIALIDAD TÉCNICA EN IA (Botones interactivos)
@@ -80,16 +92,18 @@ export class RolePanelService {
     });
 
     // -------------------------------------------------------------
-    // PANEL 2: AFILIACIÓN & UNIVERSIDAD (Menú Desplegable)
+    // PANEL 2: AFILIACIÓN & UNIVERSIDAD (Menú Desplegable Multi-Selección)
     // -------------------------------------------------------------
     const affilEmbed = new EmbedBuilder()
       .setTitle('🎓 2. Perfil, Afiliación y Universidad')
-      .setDescription('Selecciona tu ocupación principal o afiliación académica/profesional desde el menú desplegable:')
+      .setDescription('Puedes seleccionar **una o varias** opciones que describan tu perfil actual (ej: Estudiante y Profesional a la vez):')
       .setColor(0x00A859);
 
     const affilSelect = new StringSelectMenuBuilder()
       .setCustomId('select_role:affiliation')
-      .setPlaceholder('👉 Elige tu afiliación o perfil...')
+      .setPlaceholder('👉 Elige una o más opciones de afiliación / perfil...')
+      .setMinValues(1)
+      .setMaxValues(INTERACTIVE_PANELS.affiliationRoles.length)
       .addOptions(
         INTERACTIVE_PANELS.affiliationRoles.map((item) =>
           new StringSelectMenuOptionBuilder()
@@ -118,6 +132,8 @@ export class RolePanelService {
     const regionSelect = new StringSelectMenuBuilder()
       .setCustomId('select_role:region')
       .setPlaceholder('👉 Elige tu país / región...')
+      .setMinValues(1)
+      .setMaxValues(INTERACTIVE_PANELS.regionRoles.length)
       .addOptions(
         INTERACTIVE_PANELS.regionRoles.map((item) =>
           new StringSelectMenuOptionBuilder()
@@ -166,6 +182,6 @@ export class RolePanelService {
       components: [pronounButtonsRow]
     });
 
-    Logger.success('Paneles interactivos publicados con éxito en #bienvenida-y-roles.');
+    Logger.success('Paneles interactivos actualizados con éxito en #bienvenida-y-roles.');
   }
 }
