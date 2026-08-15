@@ -1,4 +1,5 @@
 import { Client, GatewayIntentBits, Events } from 'discord.js';
+import * as http from 'http';
 import * as dotenv from 'dotenv';
 import { Logger } from './utils/logger';
 import { InteractionHandler } from './handlers/interactionHandler';
@@ -6,6 +7,17 @@ import { SlashCommandHandler } from './commands/slashCommands';
 import { TicketHandler } from './handlers/ticketHandler';
 
 dotenv.config();
+
+// Servidor HTTP ligero para Health Checks de plataformas Cloud (Koyeb, Render, etc.)
+const PORT = process.env.PORT || 8000;
+const healthServer = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ status: 'ok', service: 'UNAL AI Community Discord Bot' }));
+});
+
+healthServer.listen(PORT, () => {
+  Logger.info(`Servidor de Health Check activo en el puerto ${PORT}`);
+});
 
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const GUILD_ID = process.env.DISCORD_GUILD_ID;
