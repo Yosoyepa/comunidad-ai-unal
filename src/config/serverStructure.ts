@@ -468,7 +468,7 @@ export const INTERACTIVE_PANELS = {
 export const CATEGORIES_CONFIG: CategoryConfig[] = [
   // --- 1. BIENVENIDA ---
   {
-    name: '╭── 📩 Bienvenida ──╮',
+    name: '╔══ Bienvenida ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -508,7 +508,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
 
   // --- 2. IMPORTANTE ---
   {
-    name: '╭── 📌 Importante ──╮',
+    name: '╔══ Importante ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -558,7 +558,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
 
   // --- 3. COMUNIDAD ---
   {
-    name: '╭── 💬 Comunidad ──╮',
+    name: '╔══ Comunidad ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -602,7 +602,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
 
   // --- 4. DISCUSIÓN TÉCNICA ---
   {
-    name: '╭── 🧠 Discusión Técnica ──╮',
+    name: '╔══ Discusión Técnica ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -651,7 +651,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
 
   // --- 5. SHOWCASE & SOPORTE ---
   {
-    name: '╭── 🚀 Showcase & Soporte ──╮',
+    name: '╔══ Showcase & Soporte ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -705,7 +705,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
 
   // --- 6. CANALES DE VOZ ---
   {
-    name: '╭── 🔊 Canales de Voz ──╮',
+    name: '╔══ Canales de Voz ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -742,7 +742,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
 
   // --- 7. ADMINISTRACIÓN & SEGURIDAD (PRIVADO) ---
   {
-    name: '╭── 🔒 Administración ──╮',
+    name: '╔══ Administración ══╗',
     permissionOverwrites: [
       {
         roleName: '@everyone',

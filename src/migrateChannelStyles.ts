@@ -74,16 +74,17 @@ const CHANNEL_RENAMES: Record<string, string> = {
 };
 
 const CATEGORY_RENAMES: Record<string, string> = {
-  'información & onboarding': '╭── 📌 Importante ──╮',
-  'importante': '╭── 📌 Importante ──╮',
-  'comunidad & networking': '╭── 💬 Comunidad ──╮',
-  'comunidad': '╭── 💬 Comunidad ──╮',
-  'discusión técnica de ia': '╭── 🧠 Discusión Técnica ──╮',
-  'discusión técnica': '╭── 🧠 Discusión Técnica ──╮',
-  'showcase & soporte': '╭── 🚀 Showcase & Soporte ──╮',
-  'canales de voz': '╭── 🔊 Canales de Voz ──╮',
-  'administración & logs': '╭── 🔒 Administración ──╮',
-  'administración': '╭── 🔒 Administración ──╮'
+  'bienvenida': '╔══ Bienvenida ══╗',
+  'información & onboarding': '╔══ Importante ══╗',
+  'importante': '╔══ Importante ══╗',
+  'comunidad & networking': '╔══ Comunidad ══╗',
+  'comunidad': '╔══ Comunidad ══╗',
+  'discusión técnica de ia': '╔══ Discusión Técnica ══╗',
+  'discusión técnica': '╔══ Discusión Técnica ══╗',
+  'showcase & soporte': '╔══ Showcase & Soporte ══╗',
+  'canales de voz': '╔══ Canales de Voz ══╗',
+  'administración & logs': '╔══ Administración ══╗',
+  'administración': '╔══ Administración ══╗'
 };
 
 async function migrateAesthetics(): Promise<void> {
@@ -139,9 +140,9 @@ async function migrateAesthetics(): Promise<void> {
     ) as CategoryChannel | undefined;
 
     if (!welcomeCategory) {
-      Logger.info('Creando categoría "╭── 📩 Bienvenida ──╮"...');
+      Logger.info('Creando categoría "╔══ Bienvenida ══╗"...');
       welcomeCategory = await guild.channels.create({
-        name: '╭── 📩 Bienvenida ──╮',
+        name: '╔══ Bienvenida ══╗',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           {
