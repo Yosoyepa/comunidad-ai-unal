@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Events, ChannelType, TextChannel } from 'discord.js';
 import * as http from 'http';
 import * as dotenv from 'dotenv';
 import { Logger } from './utils/logger';
@@ -80,7 +80,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // Auto-asignación de rol y mensaje de bienvenida en #📩・bienvenida al ingresar
 client.on(Events.GuildMemberAdd, async (member) => {
   try {
-    Logger.info(`Nuevo miembro ingresó al servidor: ${member.user.tag}`);
+    Logger.info(`[ONBOARDING] Nuevo miembro ingresó al servidor: ${member.user.tag} (ID: ${member.id})`);
 
     // 1. Auto-asignar rol base
     const verifiedRole = member.guild.roles.cache.find(
@@ -88,23 +88,27 @@ client.on(Events.GuildMemberAdd, async (member) => {
     );
     if (verifiedRole) {
       await member.roles.add(verifiedRole, 'Asignación automática de rol base al ingresar');
-      Logger.success(`Rol ${verifiedRole.name} asignado automáticamente a ${member.user.tag}`);
+      Logger.success(`[ONBOARDING] Rol "${verifiedRole.name}" asignado automáticamente a ${member.user.tag}`);
+    } else {
+      Logger.warn('[ONBOARDING] No se encontró el rol "✅ Miembro Verificado" para auto-asignar.');
     }
 
     // 2. Enviar saludo de bienvenida en el canal oficial #📩・bienvenida
     const channels = await member.guild.channels.fetch();
     const welcomeChannel = channels.find(
-      (c) => c && c.isTextBased() && c.name.includes('bienvenida') && !c.name.includes('roles')
-    ) as any;
+      (c) => c && c.type === ChannelType.GuildText && c.name.toLowerCase().includes('bienvenida') && !c.name.toLowerCase().includes('roles')
+    ) as TextChannel | undefined;
 
     if (welcomeChannel) {
       await welcomeChannel.send({
         content: `<@${member.id}> ¡Bienvenido al servidor de 🧠 **UNAL AI Hub** 🚀!`
       });
-      Logger.success(`Mensaje de bienvenida publicado para ${member.user.tag} en #${welcomeChannel.name}`);
+      Logger.success(`[ONBOARDING] Mensaje de bienvenida publicado para ${member.user.tag} en #${welcomeChannel.name}`);
+    } else {
+      Logger.warn('[ONBOARDING] No se encontró el canal de texto #bienvenida para publicar el saludo.');
     }
   } catch (err) {
-    Logger.warn(`No se pudo auto-asignar rol o enviar bienvenida a ${member.user.tag}:`, err);
+    Logger.error(`[ONBOARDING] Error procesando ingreso de nuevo miembro ${member.user.tag}:`, err);
   }
 });
 
