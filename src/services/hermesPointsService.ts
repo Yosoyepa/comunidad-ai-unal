@@ -21,28 +21,40 @@ export interface HermesTier {
 
 export const HERMES_TIERS: HermesTier[] = [
   {
-    roleName: '🦉 Sabio Hermes UNAL',
-    minPoints: 400,
-    badge: '🦉',
-    description: 'Máximo Rango de Sabiduría (400+ Puntos)'
+    roleName: '💎 AGI Pioneer',
+    minPoints: 500,
+    badge: '💎',
+    description: 'Nivel 6 (Supremo): 500+ Puntos (Referente y líder técnico)'
   },
   {
-    roleName: '🥇 Mochuelo Maestro',
-    minPoints: 150,
+    roleName: '🥇 SOTA Architect',
+    minPoints: 300,
     badge: '🥇',
-    description: 'Rango Avanzado de Investigación (150 - 399 Puntos)'
+    description: 'Nivel 5: 300 a 499 Puntos (Arquitectura y mentoría avanzada)'
   },
   {
-    roleName: '🥈 Mochuelo Investigador',
-    minPoints: 50,
-    badge: '🥈',
-    description: 'Rango Intermedio de Aportes (50 - 149 Puntos)'
+    roleName: '⚙️ Senior AI Engineer',
+    minPoints: 160,
+    badge: '⚙️',
+    description: 'Nivel 4: 160 a 299 Puntos (Ingeniería avanzada y fine-tuning)'
   },
   {
-    roleName: '🥉 Mochuelo Aprendiz',
+    roleName: '💻 Fine-Tuned Developer',
+    minPoints: 80,
+    badge: '💻',
+    description: 'Nivel 3: 80 a 159 Puntos (Desarrollador con aplicaciones funcionales)'
+  },
+  {
+    roleName: '⚡ Few-Shot Builder',
+    minPoints: 30,
+    badge: '⚡',
+    description: 'Nivel 2: 30 a 79 Puntos (Constructor activo en crecimiento)'
+  },
+  {
+    roleName: '🥉 Prompt Apprentice',
     minPoints: 0,
     badge: '🥉',
-    description: 'Rango Inicial de la Academia (0 - 49 Puntos)'
+    description: 'Nivel 1 (Inicial): 0 a 29 Puntos (Explorando la comunidad)'
   }
 ];
 

@@ -68,16 +68,16 @@ export class CommandGuideService {
         }
       );
 
-    // 2. EMBED: SISTEMA HERMES & JERARQUÍA DE RANGOS UNAL
+    // 2. EMBED: SISTEMA DE REPUTACIÓN Y JERARQUÍA DE RANGOS
     const tierListText = HERMES_TIERS.map(
-      (t) => `• **${t.badge} ${t.roleName}**: Requiere **${t.minPoints}+ Puntos** (${t.description})`
+      (t) => `• **${t.badge} ${t.roleName}**: **${t.minPoints}+ pts** — *${t.description}*`
     ).join('\n');
 
     const hermesEmbed = new EmbedBuilder()
-      .setTitle('🦉 2. Sistema de Sabiduría Hermes & Rangos Académicos UNAL')
+      .setTitle('⚡ 2. Sistema de Reputación & Progresión de Rangos AI')
       .setDescription(
-        'Inspirado en el sistema de investigación de la **Universidad Nacional de Colombia**, este mecanismo reconoce y premia la colaboración, resolución de dudas y victorias en retos técnicos.\n\n' +
-        '### 🏆 Jerarquía de Rangos (Auto-Promoción de Roles en Discord):\n' +
+        'Este mecanismo reconoce y premia la colaboración activa, la resolución de dudas en la comunidad y las victorias en retos técnicos de IA.\n\n' +
+        '### 🏆 Escalera de Rangos (Auto-Promoción Automática de Roles):\n' +
         `${tierListText}\n\n` +
         '### 📜 Comandos de Reputación:'
       )

@@ -176,38 +176,54 @@ export const ROLES_CONFIG: RoleConfig[] = [
     mentionable: false,
     description: 'Bots de IA, integraciones y webhooks automatizados'
   },
-  // --- ROLES DE PRESTIGIO Y RANGO HERMES UNAL ---
+  // --- ROLES DE PRESTIGIO Y RANGOS DE PROGRESIÓN (ESCALA HÍBRIDA) ---
   {
-    name: '🦉 Sabio Hermes UNAL',
-    color: 0x00A859, // Verde UNAL
+    name: '💎 AGI Pioneer',
+    color: 0x9B59B6, // Púrpura Brillante
     permissions: [],
     hoist: true,
     mentionable: true,
-    description: 'Rango Máximo: 400+ Puntos Hermes por aportes destacados y victorias en la comunidad'
+    description: 'Nivel 6 (Supremo): 500+ Puntos por excelencia técnica y liderazgo en la comunidad'
   },
   {
-    name: '🥇 Mochuelo Maestro',
+    name: '🥇 SOTA Architect',
     color: 0xFFD700, // Oro
     permissions: [],
     hoist: true,
     mentionable: false,
-    description: 'Rango Avanzado: 150 a 399 Puntos Hermes acumulados'
+    description: 'Nivel 5: 300 a 499 Puntos acumulados (Diseño de arquitecturas y mentoría)'
   },
   {
-    name: '🥈 Mochuelo Investigador',
-    color: 0xC0C0C0, // Plata
+    name: '⚙️ Senior AI Engineer',
+    color: 0x00A859, // Verde UNAL
+    permissions: [],
+    hoist: true,
+    mentionable: false,
+    description: 'Nivel 4: 160 a 299 Puntos acumulados (Ingeniería avanzada y fine-tuning)'
+  },
+  {
+    name: '💻 Fine-Tuned Developer',
+    color: 0x1ABC9C, // Turquesa
     permissions: [],
     hoist: false,
     mentionable: false,
-    description: 'Rango Intermedio: 50 a 149 Puntos Hermes acumulados'
+    description: 'Nivel 3: 80 a 159 Puntos acumulados (Desarrollador con aplicaciones funcionales)'
   },
   {
-    name: '🥉 Mochuelo Aprendiz',
+    name: '⚡ Few-Shot Builder',
+    color: 0x3498DB, // Azul
+    permissions: [],
+    hoist: false,
+    mentionable: false,
+    description: 'Nivel 2: 30 a 79 Puntos acumulados (Constructor activo en crecimiento)'
+  },
+  {
+    name: '🥉 Prompt Apprentice',
     color: 0xCD7F32, // Bronce
     permissions: [],
     hoist: false,
     mentionable: false,
-    description: 'Rango Inicial: 0 a 49 Puntos Hermes'
+    description: 'Nivel 1 (Inicial): 0 a 29 Puntos (Explorando la comunidad y primeros prompts)'
   },
   // --- ROLES DE AFILIACIÓN Y PERFIL ---
   {
