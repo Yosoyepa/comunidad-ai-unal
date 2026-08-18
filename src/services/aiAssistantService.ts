@@ -12,10 +12,27 @@ export interface AIQueryResult {
   fallbackChain: string[];
 }
 
+export interface ModelDuelResult {
+  prompt: string;
+  gemini?: {
+    text: string;
+    model: string;
+    latencyMs: number;
+  };
+  groq?: {
+    text: string;
+    model: string;
+    latencyMs: number;
+  };
+  error?: string;
+}
+
 export class AIAssistantService {
   private static userRequests = new Map<string, RateLimitEntry>();
+  private static promptCache = new Map<string, { result: AIQueryResult; expires: number }>();
   private static MAX_REQUESTS = 3;
-  private static WINDOW_MS = 5 * 60 * 1000; // 5 minutos
+  private static WINDOW_MS = 3 * 60 * 1000; // 3 peticiones cada 3 minutos
+  private static CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutos de caché en memoria
 
   /**
    * Valida y aplica el Rate Limiter por usuario para proteger las cuotas gratuitas.
@@ -29,7 +46,7 @@ export class AIAssistantService {
       this.userRequests.set(userId, entry);
     }
 
-    // Filtrar timestamps dentro de la ventana de 5 min
+    // Filtrar timestamps dentro de la ventana activa
     entry.timestamps = entry.timestamps.filter((ts) => now - ts < this.WINDOW_MS);
 
     if (entry.timestamps.length >= this.MAX_REQUESTS) {
@@ -44,9 +61,9 @@ export class AIAssistantService {
 
   /**
    * Orquestador A2A (Agent-to-Agent) con Fallback en Cascada Multi-Proveedor:
-   * 1. Google Gemini 2.0 Flash (Primario - 1,500 RPD / 15 RPM gratis)
+   * 1. Google Gemini 3.5 Flash Lite (Primario - 1,500 RPD / 15 RPM gratis)
    * 2. Groq Cloud Llama 3.3 70B (Secundario - Inferencia ultra-rápida LPU gratis)
-   * 3. OpenRouter DeepSeek R1 / Llama 3 Free (Terciario - Modelos :free)
+   * 3. OpenRouter DeepSeek R1 (Terciario - Modelos :free)
    * 4. Demo Fallback (Modo contingencia educativo si no hay claves)
    */
   public static async queryAIWithCascade(
@@ -55,6 +72,18 @@ export class AIAssistantService {
   ): Promise<AIQueryResult> {
     const startTime = Date.now();
     const fallbackChain: string[] = [];
+
+    // 0. Comprobar Caché en memoria
+    const cacheKey = `${systemInstruction || 'default'}:${prompt.trim().toLowerCase()}`;
+    const cached = this.promptCache.get(cacheKey);
+    if (cached && cached.expires > Date.now()) {
+      Logger.info(`[A2A Cache Hit] Respuesta recuperada de caché (0ms de consumo API).`);
+      return {
+        ...cached.result,
+        latencyMs: 5,
+        fallbackChain: ['Caché Local en Memoria (0ms)']
+      };
+    }
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -68,17 +97,20 @@ export class AIAssistantService {
     // -------------------------------------------------------------
     if (geminiKey && !geminiKey.includes('tu_clave')) {
       try {
-        Logger.info('[A2A Router] Intentando con Proveedor 1: Google Gemini 3.5 Flash Lite...');
+        const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+        Logger.info(`[A2A Router] Intentando con Proveedor 1: Google Gemini (${modelName})...`);
         const res = await this.queryGemini(prompt, defaultSystem, geminiKey);
         if (res) {
-          fallbackChain.push('Gemini-3.5-Flash-Lite (Éxito)');
-          return {
+          fallbackChain.push(`Gemini-${modelName} (Éxito)`);
+          const result: AIQueryResult = {
             text: res,
             provider: 'Google AI Studio',
-            model: 'Gemini 3.5 Flash Lite',
+            model: `Gemini (${modelName})`,
             latencyMs: Date.now() - startTime,
             fallbackChain
           };
+          this.promptCache.set(cacheKey, { result, expires: Date.now() + this.CACHE_TTL_MS });
+          return result;
         }
       } catch (err: any) {
         Logger.warn(`[A2A Router] Fallo en Gemini (${err?.message || 'Error'}). Activando fallback a Groq...`);
@@ -97,13 +129,15 @@ export class AIAssistantService {
         const res = await this.queryGroq(prompt, defaultSystem, groqKey);
         if (res) {
           fallbackChain.push('Groq-Llama-3.3-70B (Éxito)');
-          return {
+          const result: AIQueryResult = {
             text: res,
             provider: 'Groq Cloud',
             model: 'Llama 3.3 70B Versatile',
             latencyMs: Date.now() - startTime,
             fallbackChain
           };
+          this.promptCache.set(cacheKey, { result, expires: Date.now() + this.CACHE_TTL_MS });
+          return result;
         }
       } catch (err: any) {
         Logger.warn(`[A2A Router] Fallo en Groq (${err?.message || 'Error'}). Activando fallback a OpenRouter...`);
@@ -122,13 +156,15 @@ export class AIAssistantService {
         const res = await this.queryOpenRouter(prompt, defaultSystem, openRouterKey);
         if (res) {
           fallbackChain.push('OpenRouter-DeepSeek-R1 (Éxito)');
-          return {
+          const result: AIQueryResult = {
             text: res,
             provider: 'OpenRouter',
             model: 'DeepSeek R1 (Free)',
             latencyMs: Date.now() - startTime,
             fallbackChain
           };
+          this.promptCache.set(cacheKey, { result, expires: Date.now() + this.CACHE_TTL_MS });
+          return result;
         }
       } catch (err: any) {
         Logger.warn(`[A2A Router] Fallo en OpenRouter (${err?.message || 'Error'})...`);
@@ -160,6 +196,46 @@ export class AIAssistantService {
       fallbackChain
     };
   }
+
+  /**
+   * Ejecuta un duelo de inferencia en paralelo entre Gemini y Groq para el mismo prompt.
+   */
+  public static async queryDuel(prompt: string): Promise<ModelDuelResult> {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+
+    if (!geminiKey && !groqKey) {
+      return {
+        prompt,
+        error: 'Se requiere al menos una API Key de Gemini o Groq configurada para ejecutar el duelo.'
+      };
+    }
+
+    const system = 'Responde de forma concisa, técnica y estructurada a la siguiente consulta:';
+
+    const [geminiResult, groqResult] = await Promise.allSettled([
+      (async () => {
+        if (!geminiKey) return null;
+        const start = Date.now();
+        const text = await this.queryGemini(prompt, system, geminiKey);
+        return text ? { text, model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite', latencyMs: Date.now() - start } : null;
+      })(),
+      (async () => {
+        if (!groqKey) return null;
+        const start = Date.now();
+        const text = await this.queryGroq(prompt, system, groqKey);
+        return text ? { text, model: 'Llama 3.3 70B (Groq)', latencyMs: Date.now() - start } : null;
+      })()
+    ]);
+
+    return {
+      prompt,
+      gemini: geminiResult.status === 'fulfilled' && geminiResult.value ? geminiResult.value : undefined,
+      groq: groqResult.status === 'fulfilled' && groqResult.value ? groqResult.value : undefined
+    };
+  }
+
+  // --- ADAPTADORES PRIVADOS ---
 
   private static async queryGemini(prompt: string, system: string, apiKey: string): Promise<string | null> {
     const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
@@ -198,7 +274,7 @@ export class AIAssistantService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`
         },
         signal: controller.signal,
         body: JSON.stringify({
@@ -207,7 +283,8 @@ export class AIAssistantService {
             { role: 'system', content: system },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 1200
+          max_tokens: 1200,
+          temperature: 0.7
         })
       });
 
@@ -224,14 +301,14 @@ export class AIAssistantService {
 
   private static async queryOpenRouter(prompt: string, system: string, apiKey: string): Promise<string | null> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 12000);
 
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://unal.edu.co',
           'X-Title': 'UNAL AI Community Bot'
         },
@@ -241,7 +318,8 @@ export class AIAssistantService {
           messages: [
             { role: 'system', content: system },
             { role: 'user', content: prompt }
-          ]
+          ],
+          max_tokens: 1000
         })
       });
 

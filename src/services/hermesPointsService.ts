@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { GuildMember, Role } from 'discord.js';
 import { Logger } from '../utils/logger';
 
 export interface HermesRecord {
@@ -11,9 +12,43 @@ export interface HermesRecord {
   reasons: string[];
 }
 
+export interface HermesTier {
+  roleName: string;
+  minPoints: number;
+  badge: string;
+  description: string;
+}
+
+export const HERMES_TIERS: HermesTier[] = [
+  {
+    roleName: '🦉 Sabio Hermes UNAL',
+    minPoints: 400,
+    badge: '🦉',
+    description: 'Máximo Rango de Sabiduría (400+ Puntos)'
+  },
+  {
+    roleName: '🥇 Mochuelo Maestro',
+    minPoints: 150,
+    badge: '🥇',
+    description: 'Rango Avanzado de Investigación (150 - 399 Puntos)'
+  },
+  {
+    roleName: '🥈 Mochuelo Investigador',
+    minPoints: 50,
+    badge: '🥈',
+    description: 'Rango Intermedio de Aportes (50 - 149 Puntos)'
+  },
+  {
+    roleName: '🥉 Mochuelo Aprendiz',
+    minPoints: 0,
+    badge: '🥉',
+    description: 'Rango Inicial de la Academia (0 - 49 Puntos)'
+  }
+];
+
 export class HermesPointsService {
   private static dbPath = path.join(process.cwd(), 'data', 'hermes.json');
-  private static cooldownMs = 60 * 60 * 1000; // 1 hora de cooldown por usuario
+  private static cooldownMs = 30 * 60 * 1000; // 30 minutos de cooldown para agradecer
 
   private static ensureDataDir(): void {
     const dir = path.dirname(this.dbPath);
@@ -46,24 +81,107 @@ export class HermesPointsService {
   }
 
   /**
-   * Otorga Puntos Hermes (+1 Búho de Sabiduría) de un usuario a otro.
+   * Determina el tier correspondiente según los puntos acumulados.
    */
-  public static addPoints(
+  public static getTierForPoints(points: number): HermesTier {
+    for (const tier of HERMES_TIERS) {
+      if (points >= tier.minPoints) {
+        return tier;
+      }
+    }
+    return HERMES_TIERS[HERMES_TIERS.length - 1];
+  }
+
+  /**
+   * Sincroniza y auto-promueve el rol de prestigio Hermes en Discord.
+   */
+  public static async syncPrestigeRole(member: GuildMember, points: number): Promise<{ upgraded: boolean; newTier?: HermesTier }> {
+    try {
+      const targetTier = this.getTierForPoints(points);
+      const tierRoleNames = HERMES_TIERS.map((t) => t.roleName.toLowerCase());
+
+      const currentTierRole = member.roles.cache.find((r) =>
+        tierRoleNames.includes(r.name.toLowerCase())
+      );
+
+      const targetRole = member.guild.roles.cache.find(
+        (r) => r.name.toLowerCase() === targetTier.roleName.toLowerCase()
+      );
+
+      if (!targetRole) return { upgraded: false };
+
+      if (!currentTierRole || currentTierRole.id !== targetRole.id) {
+        // Remover otros roles de prestigio
+        const rolesToRemove = member.roles.cache.filter((r) =>
+          tierRoleNames.includes(r.name.toLowerCase()) && r.id !== targetRole.id
+        );
+        for (const [, r] of rolesToRemove) {
+          await member.roles.remove(r, 'Actualización de Rango Hermes');
+        }
+
+        await member.roles.add(targetRole, `Promoción de Rango Hermes: ${targetTier.roleName}`);
+        Logger.success(`Usuario ${member.user.tag} promovido al rol de prestigio ${targetRole.name}`);
+        return { upgraded: true, newTier: targetTier };
+      }
+
+      return { upgraded: false };
+    } catch (err) {
+      Logger.warn(`No se pudo sincronizar rol de prestigio Hermes para ${member.user.tag}:`, err);
+      return { upgraded: false };
+    }
+  }
+
+  /**
+   * Otorga puntos directamente a un usuario (por trivia, retos o aportes).
+   */
+  public static async awardDirectPoints(
+    userId: string, 
+    amount: number, 
+    reason: string, 
+    member?: GuildMember
+  ): Promise<{ newPoints: number; upgraded: boolean; newTier?: HermesTier }> {
+    const data = this.loadData();
+    const record: HermesRecord = data[userId] || {
+      userId,
+      points: 0,
+      givenCount: 0,
+      receivedCount: 0,
+      reasons: []
+    };
+
+    record.points += amount;
+    record.receivedCount += 1;
+    record.reasons.push(reason.slice(0, 150));
+    data[userId] = record;
+    this.saveData(data);
+
+    let upgradeResult: { upgraded: boolean; newTier?: HermesTier } = { upgraded: false };
+    if (member) {
+      upgradeResult = await this.syncPrestigeRole(member, record.points);
+    }
+
+    return { newPoints: record.points, upgraded: upgradeResult.upgraded, newTier: upgradeResult.newTier };
+  }
+
+  /**
+   * Otorga Puntos Hermes de un usuario a otro con cooldown y validación de auto-reconocimiento.
+   */
+  public static async addPoints(
     giverId: string, 
     receiverId: string, 
-    reason: string
-  ): { success: boolean; message: string; receiverPoints?: number } {
+    reason: string,
+    receiverMember?: GuildMember
+  ): Promise<{ success: boolean; message: string; receiverPoints?: number; upgraded?: boolean; newTier?: HermesTier }> {
     if (giverId === receiverId) {
       return { 
         success: false, 
-        message: '🦉 ¡Un mochuelo no puede otorgarse sabiduría a sí mismo! Agradece a otros compañeros de la academia.' 
+        message: '🦉 ¡Un mochuelo no puede otorgarse sabiduría a sí mismo! Reconoce los aportes de tus compañeros.' 
       };
     }
 
     const data = this.loadData();
     const now = Date.now();
 
-    // Validar cooldown del dador
     const giverRecord: HermesRecord = data[giverId] || {
       userId: giverId,
       points: 0,
@@ -80,7 +198,6 @@ export class HermesPointsService {
       };
     }
 
-    // Actualizar receptor
     const receiverRecord: HermesRecord = data[receiverId] || {
       userId: receiverId,
       points: 0,
@@ -89,32 +206,35 @@ export class HermesPointsService {
       reasons: []
     };
 
-    receiverRecord.points += 1;
+    receiverRecord.points += 5; // Cada agradecimiento suma +5 Puntos Hermes
     receiverRecord.receivedCount += 1;
     receiverRecord.reasons.push(reason.slice(0, 150));
 
-    // Actualizar dador
     giverRecord.givenCount += 1;
     giverRecord.lastGivenTimestamp = now;
 
     data[giverId] = giverRecord;
     data[receiverId] = receiverRecord;
-
     this.saveData(data);
 
-    Logger.info(`Punto Hermes otorgado de ${giverId} a ${receiverId}. Motivo: ${reason}`);
+    let upgradeResult: { upgraded: boolean; newTier?: HermesTier } = { upgraded: false };
+    if (receiverMember) {
+      upgradeResult = await this.syncPrestigeRole(receiverMember, receiverRecord.points);
+    }
 
     return {
       success: true,
-      message: `🏛️ **¡Reconocimiento Hermes Otorgado!** Has otorgado **+1 Búho de Sabiduría (Punto Hermes)** por su aporte a la academia.`,
-      receiverPoints: receiverRecord.points
+      message: `🏛️ **¡Reconocimiento Hermes Otorgado!** Has concedido **+5 Puntos Hermes de Sabiduría** a <@${receiverId}> por: *"${reason}"*.`,
+      receiverPoints: receiverRecord.points,
+      upgraded: upgradeResult.upgraded,
+      newTier: upgradeResult.newTier
     };
   }
 
   /**
    * Retorna el perfil y rango académico UNAL del usuario.
    */
-  public static getProfile(userId: string): { record: HermesRecord; rankTitle: string; emoji: string } {
+  public static getProfile(userId: string): { record: HermesRecord; tier: HermesTier; nextTier?: HermesTier; pointsToNext: number } {
     const data = this.loadData();
     const record: HermesRecord = data[userId] || {
       userId,
@@ -124,33 +244,25 @@ export class HermesPointsService {
       reasons: []
     };
 
-    let rankTitle = 'Mochuelo Novato (Iniciando en la Academia)';
-    let emoji = '🐣';
+    const currentTier = this.getTierForPoints(record.points);
+    const tierIndex = HERMES_TIERS.findIndex((t) => t.roleName === currentTier.roleName);
+    const nextTier = tierIndex > 0 ? HERMES_TIERS[tierIndex - 1] : undefined;
+    const pointsToNext = nextTier ? Math.max(0, nextTier.minPoints - record.points) : 0;
 
-    if (record.points >= 25) {
-      rankTitle = 'Catedrático Emérito UNAL (Sabiduría Suprema)';
-      emoji = '👑';
-    } else if (record.points >= 15) {
-      rankTitle = 'Sabio de la Academia UNAL (Investigador Senior)';
-      emoji = '🏛️';
-    } else if (record.points >= 8) {
-      rankTitle = 'Búho Investigador Hermes';
-      emoji = '🦉';
-    } else if (record.points >= 3) {
-      rankTitle = 'Mochuelo Aplicado (Aportante Activo)';
-      emoji = '📚';
-    }
-
-    return { record, rankTitle, emoji };
+    return { record, tier: currentTier, nextTier, pointsToNext };
   }
 
   /**
    * Retorna el leaderboard ordenado por Puntos Hermes.
    */
-  public static getLeaderboard(limit = 10): HermesRecord[] {
+  public static getLeaderboard(limit = 10): Array<{ record: HermesRecord; tier: HermesTier }> {
     const data = this.loadData();
     return Object.values(data)
       .sort((a, b) => b.points - a.points)
-      .slice(0, limit);
+      .slice(0, limit)
+      .map((record) => ({
+        record,
+        tier: this.getTierForPoints(record.points)
+      }));
   }
 }

@@ -1,6 +1,7 @@
 import { Guild, TextChannel, EmbedBuilder, ChannelType } from 'discord.js';
 import { Logger } from '../utils/logger';
 import { TicketHandler } from '../handlers/ticketHandler';
+import { CommandGuideService } from './commandGuideService';
 
 export class WelcomeService {
   /**
@@ -20,44 +21,44 @@ export class WelcomeService {
       const messages = await rulesChannel.messages.fetch({ limit: 5 });
       if (messages.size === 0) {
         Logger.info(`Publicando reglamento oficial en #${rulesChannel.name}...`);
-        
+
         const rulesEmbed = new EmbedBuilder()
-          .setTitle('📜 Código de Conducta y Normas de la Comunidad AI')
-          .setDescription('¡Bienvenido/a a la comunidad de Inteligencia Artificial! Nuestro objetivo es fomentar la investigación, el desarrollo ético y la colaboración técnica en torno a la IA. Para garantizar un ambiente constructivo, te pedimos respetar las siguientes normas:')
-          .setColor(0x3498DB)
+          .setTitle('📜 Código de Conducta y Normas de la Comunidad')
+          .setDescription('Bienvenido a la comunidad de Inteligencia Artificial. Para mantener un ambiente riguroso, colaborativo y respetuoso, todos los miembros deben seguir estas normas:')
+          .setColor(0x00A859) // Verde UNAL
           .addFields(
             {
-              name: '1. 🔒 Seguridad Absoluta de Credenciales y Claves de API',
-              value: 'Queda estrictamente prohibido compartir **API Keys** (OpenAI, Anthropic, HuggingFace, etc.), tokens de acceso o contraseñas. Disponemos de filtros automáticos de seguridad, pero eres responsable de tus claves.'
+              name: '1. Respeto y Rigor Académico',
+              value: 'Trata a todos los miembros con cortesía. Fomentamos el debate técnico constructivo, la argumentación con fuentes y la colaboración abierta.'
             },
             {
-              name: '2. 🤝 Respeto, Diversidad y Colaboración Técnica',
-              value: 'Trata a todos los miembros con respeto. Se incentiva el debate técnico constructivo, la crítica de código fundamentada y la resolución colaborativa de problemas.'
+              name: '2. Seguridad y Privacidad de Credenciales',
+              value: 'Está estrictamente prohibido compartir **API Keys** (OpenAI, Anthropic, Hugging Face, etc.), tokens o credenciales privadas. Nuestro sistema AutoMod bloqueará automáticamente mensajes que contengan claves.'
             },
             {
-              name: '3. 🧠 Uso Ético y Responsable de la IA',
-              value: 'No está permitido compartir, promover o solicitar contenido malicioso (malware con IA, jailbreaks destructivos, deepfakes no consentidos o generación de spam).'
+              name: '3. Calidad de Contenido y Cero Spam',
+              value: 'Utiliza los canales temáticos correspondientes. Prohibido el spam, publicidad no solicitada, enlaces de referidos o estafas cripto/airdrops.'
             },
             {
-              name: '4. 🚫 Cero Tolerancia al Spam y Auto-Promoción Desmedida',
-              value: 'No hagas spam de enlaces de invitación a otros servidores o esquemas cripto. Comparte tus proyectos y demos en el canal dedicado **#showcase-proyectos**.'
+              name: '4. Uso Ético de la Inteligencia Artificial',
+              value: 'Promovemos el desarrollo responsable de IA. No se permite compartir exploits maliciosos, deepfakes no consentidos o contenido que viole leyes aplicables.'
             },
             {
-              name: '5. 📂 Canales Temáticos Adecuados',
-              value: 'Publica cada tema en su canal correspondiente (LLMs, Visión, RAG, Fine-tuning, Empleo). Mantén los hilos ordenados.'
+              name: '5. Canales de Ayuda y Preguntas Técnicas',
+              value: 'Antes de preguntar, describe claramente tu problema, incluye el código relevante formateado en bloques de Markdown y detalla qué has intentado.'
             }
           )
-          .setFooter({ text: 'Comunidad AI • Seguridad y Conocimiento Compartido' })
+          .setFooter({ text: 'Inter Aulas Academiæ Quære Verum • Universidad Nacional de Colombia' })
           .setTimestamp();
 
         await rulesChannel.send({ embeds: [rulesEmbed] });
-        Logger.success(`Reglamento publicado en #${rulesChannel.name}`);
+        Logger.success(`Reglas publicadas en #${rulesChannel.name}`);
       } else {
         Logger.info(`El canal #${rulesChannel.name} ya contiene mensajes. Se omite duplicado.`);
       }
     }
 
-    // 2. BIENVENIDA Y ROLES
+    // 2. BIENVENIDA Y ROLES (GUÍA GENERAL)
     const welcomeChannel = channels.find(
       (c) => c && c.type === ChannelType.GuildText && c.name.includes('bienvenida-y-roles')
     ) as TextChannel | undefined;
@@ -65,16 +66,19 @@ export class WelcomeService {
     if (welcomeChannel) {
       const messages = await welcomeChannel.messages.fetch({ limit: 5 });
       if (messages.size === 0) {
-        Logger.info(`Publicando guía de bienvenida y roles en #${welcomeChannel.name}...`);
+        Logger.info(`Publicando guía de bienvenida en #${welcomeChannel.name}...`);
 
         const welcomeEmbed = new EmbedBuilder()
-          .setTitle('👋 ¡Bienvenido/a al Hub de Inteligencia Artificial!')
-          .setDescription('Este servidor reúne a investigadores, ingenieros de software, diseñadores de prompts y entusiastas del ecosistema de IA. Personaliza tu perfil asignándote los roles que mejor definen tu enfoque técnico:')
-          .setColor(0x2ECC71)
+          .setTitle('👋 ¡Bienvenido a la Comunidad AI!')
+          .setDescription(
+            'Somos un espacio colaborativo para estudiantes, investigadores, ingenieros y creadores apasionados por la Inteligencia Artificial y la Ciencia de Datos.\n\n' +
+            '### 🎯 ¿Cuál es tu enfoque?'
+          )
+          .setColor(0x3498DB)
           .addFields(
             {
-              name: '🔬 AI Researcher / Scientist',
-              value: 'Para quienes investigan arquitecturas de modelos, papers de arXiv, modelos fundacionales y matemáticas del aprendizaje profundo.'
+              name: '🔬 AI Researcher',
+              value: 'Para quienes exploran arquitecturas de redes, papers, fundamentos teóricos, matemáticas del deep learning y experimentación.'
             },
             {
               name: '💻 AI Engineer / MLOps',
@@ -153,5 +157,8 @@ export class WelcomeService {
         Logger.info(`El canal #${ticketChannel.name} ya contiene mensajes. Se omite duplicado.`);
       }
     }
+
+    // 5. COMPENDIO OFICIAL DE COMANDOS Y GUÍA
+    await CommandGuideService.postCommandGuide(guild);
   }
 }

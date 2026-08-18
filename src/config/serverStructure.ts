@@ -176,6 +176,39 @@ export const ROLES_CONFIG: RoleConfig[] = [
     mentionable: false,
     description: 'Bots de IA, integraciones y webhooks automatizados'
   },
+  // --- ROLES DE PRESTIGIO Y RANGO HERMES UNAL ---
+  {
+    name: '🦉 Sabio Hermes UNAL',
+    color: 0x00A859, // Verde UNAL
+    permissions: [],
+    hoist: true,
+    mentionable: true,
+    description: 'Rango Máximo: 400+ Puntos Hermes por aportes destacados y victorias en la comunidad'
+  },
+  {
+    name: '🥇 Mochuelo Maestro',
+    color: 0xFFD700, // Oro
+    permissions: [],
+    hoist: true,
+    mentionable: false,
+    description: 'Rango Avanzado: 150 a 399 Puntos Hermes acumulados'
+  },
+  {
+    name: '🥈 Mochuelo Investigador',
+    color: 0xC0C0C0, // Plata
+    permissions: [],
+    hoist: false,
+    mentionable: false,
+    description: 'Rango Intermedio: 50 a 149 Puntos Hermes acumulados'
+  },
+  {
+    name: '🥉 Mochuelo Aprendiz',
+    color: 0xCD7F32, // Bronce
+    permissions: [],
+    hoist: false,
+    mentionable: false,
+    description: 'Rango Inicial: 0 a 49 Puntos Hermes'
+  },
   // --- ROLES DE AFILIACIÓN Y PERFIL ---
   {
     name: '🏛️ UNAL (Universidad Nacional)',
@@ -458,6 +491,11 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
         name: '👋┃bienvenida-y-roles',
         type: ChannelType.GuildText,
         topic: 'Guía de inicio y selección de roles técnicos para personalizar tu experiencia.'
+      },
+      {
+        name: '📖┃comandos-y-guia',
+        type: ChannelType.GuildText,
+        topic: 'Compendio oficial de comandos Slash (/), reglas de rate limit y sistema de rangos Hermes UNAL.'
       },
       {
         name: '🔗┃recursos-y-links',
