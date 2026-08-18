@@ -8,11 +8,16 @@ import { TicketHandler } from './handlers/ticketHandler';
 
 dotenv.config();
 
-// Servidor HTTP ligero para Health Checks de plataformas Cloud (Koyeb, Render, etc.)
+// Servidor HTTP ligero opcional para health checks y diagnóstico.
 const PORT = process.env.PORT || 8000;
 const healthServer = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ status: 'ok', service: 'UNAL AI Community Discord Bot' }));
+  res.end(JSON.stringify({
+    status: 'ok',
+    discord: client.isReady() ? 'ready' : 'connecting',
+    service: 'UNAL AI Community Discord Bot',
+    uptime: Math.floor(process.uptime())
+  }));
 });
 
 healthServer.listen(PORT, () => {
