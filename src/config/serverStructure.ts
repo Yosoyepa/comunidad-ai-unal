@@ -466,9 +466,9 @@ export const INTERACTIVE_PANELS = {
 // 2. CATEGORÍAS Y CANALES
 // -------------------------------------------------------------
 export const CATEGORIES_CONFIG: CategoryConfig[] = [
-  // --- 1. INFORMACIÓN & ONBOARDING ---
+  // --- 1. BIENVENIDA ---
   {
-    name: '📌 INFORMACIÓN & ONBOARDING',
+    name: '╭── 📩 Bienvenida ──╮',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -494,36 +494,71 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ],
     channels: [
       {
-        name: '📜┃reglas-y-normas',
+        name: '📩・bienvenida',
+        type: ChannelType.GuildText,
+        topic: 'Canal oficial de llegadas y bienvenida para cada nuevo miembro de la comunidad.'
+      },
+      {
+        name: '👋・roles-y-perfil',
+        type: ChannelType.GuildText,
+        topic: 'Guía de inicio y selección de roles técnicos y de perfil para personalizar tu experiencia.'
+      }
+    ]
+  },
+
+  // --- 2. IMPORTANTE ---
+  {
+    name: '╭── 📌 Importante ──╮',
+    permissionOverwrites: [
+      {
+        roleName: '@everyone',
+        allow: [
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.ReadMessageHistory
+        ],
+        deny: [
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.CreatePublicThreads,
+          PermissionFlagsBits.CreatePrivateThreads,
+          PermissionFlagsBits.AddReactions
+        ]
+      },
+      {
+        roleName: '👑 Fundador / Core Team',
+        allow: [PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageMessages]
+      },
+      {
+        roleName: '🛡️ Moderador AI',
+        allow: [PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageMessages]
+      }
+    ],
+    channels: [
+      {
+        name: '📜・normas',
         type: ChannelType.GuildText,
         topic: 'Normas y código de conducta de la comunidad AI. Canal de solo lectura.'
       },
       {
-        name: '📢┃anuncios-oficiales',
+        name: '📢・anuncios',
         type: ChannelType.GuildAnnouncement,
         topic: 'Novedades, eventos, workshops y comunicados oficiales del Core Team.'
       },
       {
-        name: '👋┃bienvenida-y-roles',
-        type: ChannelType.GuildText,
-        topic: 'Guía de inicio y selección de roles técnicos para personalizar tu experiencia.'
-      },
-      {
-        name: '📖┃comandos-y-guia',
+        name: '📖・comandos-y-guia',
         type: ChannelType.GuildText,
         topic: 'Compendio oficial de comandos Slash (/), reglas de rate limit y sistema de rangos Hermes UNAL.'
       },
       {
-        name: '🔗┃recursos-y-links',
+        name: '🔗・recursos-ai',
         type: ChannelType.GuildText,
         topic: 'Compendio curado de repositorios, papers, cursos, APIs y herramientas de IA.'
       }
     ]
   },
 
-  // --- 2. COMUNIDAD & NETWORKING ---
+  // --- 3. COMUNIDAD ---
   {
-    name: '💬 COMUNIDAD & NETWORKING',
+    name: '╭── 💬 Comunidad ──╮',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -539,25 +574,25 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ],
     channels: [
       {
-        name: '💬┃general-ai',
+        name: '💬・chat-general',
         type: ChannelType.GuildText,
         topic: 'Conversación general sobre actualidad, debates y ecosistema de Inteligencia Artificial.',
         rateLimitPerUser: 5
       },
       {
-        name: '🤝┃presentaciones',
+        name: '🤝・presentaciones',
         type: ChannelType.GuildText,
         topic: '¡Cuéntanos quién eres! Tu stack, tus proyectos en IA y qué estás construyendo.',
         rateLimitPerUser: 10
       },
       {
-        name: '💼┃empleo-y-colabs',
+        name: '💼・empleo-y-colabs',
         type: ChannelType.GuildText,
         topic: 'Ofertas de trabajo en IA/ML, búsqueda de cofundadores y proyectos colaborativos.',
         rateLimitPerUser: 30
       },
       {
-        name: '☕┃cafe-y-offtopic',
+        name: '☕・cafe-y-offtopic',
         type: ChannelType.GuildText,
         topic: 'Espacio distendido para charlar sobre tecnología, ocio y vida cotidiana.',
         rateLimitPerUser: 5
@@ -565,9 +600,9 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ]
   },
 
-  // --- 3. DISCUSIÓN TÉCNICA DE IA ---
+  // --- 4. DISCUSIÓN TÉCNICA ---
   {
-    name: '🧠 DISCUSIÓN TÉCNICA DE IA',
+    name: '╭── 🧠 Discusión Técnica ──╮',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -583,40 +618,40 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ],
     channels: [
       {
-        name: '🤖┃llms-y-agentes',
+        name: '🤖・llms-y-agentes',
         type: ChannelType.GuildText,
         topic: 'Modelos de lenguaje (GPT-4o, Claude 3.5, Gemini, Llama 3, DeepSeek), Frameworks de agentes (LangGraph, CrewAI, AutoGen).',
         rateLimitPerUser: 5
       },
       {
-        name: '👁️┃vision-y-multimodal',
+        name: '👁️・vision-y-multimodal',
         type: ChannelType.GuildText,
         topic: 'Generación de imágenes, video, audio y modelos multimodales (Flux, Stable Diffusion, Whisper, TTS, Vision).',
         rateLimitPerUser: 5
       },
       {
-        name: '⚡┃rag-y-vector-dbs',
+        name: '⚡・rag-y-vector-dbs',
         type: ChannelType.GuildText,
         topic: 'Sistemas RAG, embeddings, rerankers, bases vectoriales (Chroma, Qdrant, Pinecone, Milvus, pgvector).',
         rateLimitPerUser: 5
       },
       {
-        name: '🛠️┃fine-tuning-y-evals',
+        name: '🛠️・fine-tuning-y-evals',
         type: ChannelType.GuildText,
         topic: 'LoRA, QLoRA, Axolotl, Unsloth, datasets sintéticos, benchmarks y evaluación de modelos.',
         rateLimitPerUser: 5
       },
       {
-        name: '📚┃papers-y-investigacion',
-        type: ChannelType.GuildForum, // Si no está habilitado Community, el aprovisionador fallbackeará a GuildText
+        name: '📚・papers-y-investigacion',
+        type: ChannelType.GuildForum,
         topic: 'Discusión y análisis de papers de arXiv, nuevas arquitecturas y avances científicos.'
       }
     ]
   },
 
-  // --- 4. SHOWCASE & SOPORTE ---
+  // --- 5. SHOWCASE & SOPORTE ---
   {
-    name: '🚀 SHOWCASE & SOPORTE',
+    name: '╭── 🚀 Showcase & Soporte ──╮',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -631,23 +666,23 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ],
     channels: [
       {
-        name: '💡┃showcase-proyectos',
+        name: '💡・showcase-proyectos',
         type: ChannelType.GuildForum,
         topic: 'Muestra tus creaciones, demos, apps y agentes construidos con IA. ¡Recibe feedback de la comunidad!'
       },
       {
-        name: '❓┃dudas-y-code-review',
+        name: '❓・dudas-y-code-review',
         type: ChannelType.GuildForum,
         topic: 'Preguntas técnicas, bugs de código con librerías de IA (PyTorch, Transformers, LangChain, SDKs).'
       },
       {
-        name: '🧪┃prompts-y-experimentos',
+        name: '🧪・prompts-y-experimentos',
         type: ChannelType.GuildText,
         topic: 'Comparte tus mejores system prompts, técnicas de few-shot, reasoning chains y jailbreaks defensivos.',
         rateLimitPerUser: 5
       },
       {
-        name: '🎫┃abrir-ticket',
+        name: '🎫・abrir-ticket',
         type: ChannelType.GuildText,
         topic: 'Canal oficial para solicitar tickets privados de soporte, mentoría técnica o consultas con el equipo.',
         permissionOverwrites: [
@@ -668,9 +703,9 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ]
   },
 
-  // --- 5. CANALES DE VOZ & ESCENARIOS ---
+  // --- 6. CANALES DE VOZ ---
   {
-    name: '🔊 CANALES DE VOZ',
+    name: '╭── 🔊 Canales de Voz ──╮',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -684,30 +719,30 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ],
     channels: [
       {
-        name: '🎙️┃Salón Principal',
+        name: '🎙️・Salón Principal',
         type: ChannelType.GuildVoice
       },
       {
-        name: '🎧┃Coworking AI (Focus)',
+        name: '🎧・Coworking AI (Focus)',
         type: ChannelType.GuildVoice,
         userLimit: 25
       },
       {
-        name: '🗣️┃Mesa Redonda 1',
+        name: '🗣️・Mesa Redonda 1',
         type: ChannelType.GuildVoice,
         userLimit: 10
       },
       {
-        name: '🗣️┃Mesa Redonda 2',
+        name: '🗣️・Mesa Redonda 2',
         type: ChannelType.GuildVoice,
         userLimit: 10
       }
     ]
   },
 
-  // --- 6. ADMINISTRACIÓN & SEGURIDAD (PRIVADO) ---
+  // --- 7. ADMINISTRACIÓN & SEGURIDAD (PRIVADO) ---
   {
-    name: '🔒 ADMINISTRACIÓN & LOGS',
+    name: '╭── 🔒 Administración ──╮',
     permissionOverwrites: [
       {
         roleName: '@everyone',
@@ -734,17 +769,17 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     ],
     channels: [
       {
-        name: '📊┃logs-audit',
+        name: '📊・logs-audit',
         type: ChannelType.GuildText,
         topic: 'Registro de auditoría, ingresos, expulsiones y eventos del servidor.'
       },
       {
-        name: '💬┃staff-chat',
+        name: '💬・staff-chat',
         type: ChannelType.GuildText,
         topic: 'Coordinación interna entre Administradores y Moderadores.'
       },
       {
-        name: '🤖┃bot-debug',
+        name: '🤖・bot-debug',
         type: ChannelType.GuildText,
         topic: 'Canal de pruebas de comandos y logs de bots.'
       }

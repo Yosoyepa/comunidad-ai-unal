@@ -77,19 +77,34 @@ client.on(Events.InteractionCreate, async (interaction) => {
   await InteractionHandler.handleInteraction(interaction);
 });
 
-// Auto-asignación de rol de miembro al ingresar (Onboarding)
+// Auto-asignación de rol y mensaje de bienvenida en #📩・bienvenida al ingresar
 client.on(Events.GuildMemberAdd, async (member) => {
   try {
     Logger.info(`Nuevo miembro ingresó al servidor: ${member.user.tag}`);
+
+    // 1. Auto-asignar rol base
     const verifiedRole = member.guild.roles.cache.find(
-      (r) => r.name.toLowerCase() === '✅ miembro verificado'
+      (r) => r.name.toLowerCase().includes('miembro verificado')
     );
     if (verifiedRole) {
       await member.roles.add(verifiedRole, 'Asignación automática de rol base al ingresar');
       Logger.success(`Rol ${verifiedRole.name} asignado automáticamente a ${member.user.tag}`);
     }
+
+    // 2. Enviar saludo de bienvenida en el canal oficial #📩・bienvenida
+    const channels = await member.guild.channels.fetch();
+    const welcomeChannel = channels.find(
+      (c) => c && c.isTextBased() && c.name.includes('bienvenida') && !c.name.includes('roles')
+    ) as any;
+
+    if (welcomeChannel) {
+      await welcomeChannel.send({
+        content: `<@${member.id}> ¡Bienvenido al servidor de 🧠 **UNAL AI Hub** 🚀!`
+      });
+      Logger.success(`Mensaje de bienvenida publicado para ${member.user.tag} en #${welcomeChannel.name}`);
+    }
   } catch (err) {
-    Logger.warn(`No se pudo auto-asignar rol al nuevo miembro ${member.user.tag}:`, err);
+    Logger.warn(`No se pudo auto-asignar rol o enviar bienvenida a ${member.user.tag}:`, err);
   }
 });
 

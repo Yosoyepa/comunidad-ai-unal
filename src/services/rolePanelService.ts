@@ -21,11 +21,11 @@ export class RolePanelService {
 
     const channels = await guild.channels.fetch();
     const welcomeChannel = channels.find(
-      (c) => c && c.type === ChannelType.GuildText && c.name.includes('bienvenida-y-roles')
+      (c) => c && c.type === ChannelType.GuildText && (c.name.includes('roles') || c.name.includes('bienvenida-y-roles'))
     ) as TextChannel | undefined;
 
     if (!welcomeChannel) {
-      Logger.error('No se encontró el canal #bienvenida-y-roles para publicar los paneles.');
+      Logger.error('No se encontró el canal de roles para publicar los paneles.');
       return;
     }
 

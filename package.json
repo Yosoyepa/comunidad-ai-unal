@@ -14,6 +14,7 @@
     "bot": "ts-node src/bot.ts",
     "feed:arxiv": "ts-node src/cron/arxivFeed.ts",
     "refresh:panels": "ts-node src/refreshPanels.ts",
+    "migrate:styles": "ts-node src/migrateChannelStyles.ts",
     "provision": "ts-node src/provision.ts",
     "provision:clean": "ts-node src/provision.ts --clean-defaults",
     "test:connection": "ts-node src/testConnection.ts"
