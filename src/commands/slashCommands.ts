@@ -42,7 +42,7 @@ export const COMMANDS_DATA = [
   // 3. Duelo de Modelos de IA
   new SlashCommandBuilder()
     .setName('duelo-ia')
-    .setDescription('⚔️ Arena de Modelos: Compara Gemini 3.5 Flash vs Groq Llama 3.3 en tiempo real')
+    .setDescription('⚔️ Arena de Modelos: Compara Google Gemini vs Groq Cloud en tiempo real')
     .addStringOption((opt) =>
       opt.setName('prompt')
         .setDescription('El prompt o problema a resolver por ambos modelos')
@@ -243,7 +243,7 @@ export class SlashCommandHandler {
         }
 
         const duelEmbed = new EmbedBuilder()
-          .setTitle('⚔️ Duelo de Modelos: Gemini 3.5 Flash vs Groq Llama 3.3')
+          .setTitle('⚔️ Duelo de Modelos: Google Gemini vs Groq Cloud')
           .setDescription(`**Prompt de Prueba:** *"${prompt}"*`)
           .setColor(0xE67E22);
 
@@ -257,7 +257,7 @@ export class SlashCommandHandler {
 
         if (duel.groq) {
           duelEmbed.addFields({
-            name: `🟠 Groq Cloud / Llama 3.3 70B (${duel.groq.latencyMs}ms)`,
+            name: `🟠 Groq Cloud (${duel.groq.model}) (${duel.groq.latencyMs}ms)`,
             value: duel.groq.text.length > 1000 ? `${duel.groq.text.slice(0, 997)}...` : duel.groq.text,
             inline: false
           });
@@ -273,7 +273,7 @@ export class SlashCommandHandler {
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId('btn_duel_vote:groq')
-            .setLabel('Votar por Llama 3.3 (0)')
+            .setLabel('Votar por Groq (0)')
             .setEmoji('🟠')
             .setStyle(ButtonStyle.Success)
         );

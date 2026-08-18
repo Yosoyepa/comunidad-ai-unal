@@ -224,7 +224,7 @@ export class AIAssistantService {
         if (!groqKey) return null;
         const start = Date.now();
         const text = await this.queryGroq(prompt, system, groqKey);
-        return text ? { text, model: 'Llama 3.3 70B (Groq)', latencyMs: Date.now() - start } : null;
+        return text ? { text, model: process.env.GROQ_MODEL || 'GPT-OSS 120B (Groq)', latencyMs: Date.now() - start } : null;
       })()
     ]);
 
@@ -266,37 +266,52 @@ export class AIAssistantService {
   }
 
   private static async queryGroq(prompt: string, system: string, apiKey: string): Promise<string | null> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const candidateModels = [
+      process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
+      'qwen/qwen3.6-27b',
+      'groq/compound'
+    ];
 
-    try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: prompt }
-          ],
-          max_tokens: 1200,
-          temperature: 0.7
-        })
-      });
+    for (const model of candidateModels) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} - ${await response.text()}`);
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content: prompt }
+            ],
+            max_tokens: 1200,
+            temperature: 0.7
+          })
+        });
+
+        if (response.ok) {
+          const data: any = await response.json();
+          let content = data.choices?.[0]?.message?.content || null;
+          if (content) {
+            // Limpiar etiquetas de razonamiento interno de modelos como Qwen
+            content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+            return content;
+          }
+        }
+      } catch (err: any) {
+        Logger.warn(`[Groq] Intento con modelo ${model} falló:`, err?.message);
+      } finally {
+        clearTimeout(timeout);
       }
-
-      const data: any = await response.json();
-      return data.choices?.[0]?.message?.content || null;
-    } finally {
-      clearTimeout(timeout);
     }
+
+    return null;
   }
 
   private static async queryOpenRouter(prompt: string, system: string, apiKey: string): Promise<string | null> {
