@@ -5,6 +5,7 @@ import { Logger } from './utils/logger';
 import { InteractionHandler } from './handlers/interactionHandler';
 import { SlashCommandHandler } from './commands/slashCommands';
 import { TicketHandler } from './handlers/ticketHandler';
+import { DuelService } from './services/duelService';
 
 dotenv.config();
 
@@ -40,6 +41,25 @@ const client = new Client({
     GatewayIntentBits.MessageContent
   ]
 });
+
+// Configurar listener para actualizar duelos de IA automáticamente al expirar los 2 minutos
+DuelService.onDuelConcluded = async (channelId, messageId, embed, row) => {
+  try {
+    const channel = await client.channels.fetch(channelId) as TextChannel | null;
+    if (channel && channel.isTextBased()) {
+      const msg = await channel.messages.fetch(messageId);
+      if (msg) {
+        await msg.edit({
+          embeds: [embed],
+          components: [row]
+        });
+        Logger.success(`[Duelo IA] Mensaje ${messageId} actualizado con el veredicto en #${channel.name}`);
+      }
+    }
+  } catch (err) {
+    Logger.error(`[Duelo IA] No se pudo editar mensaje de duelo ${messageId}:`, err);
+  }
+};
 
 client.once(Events.ClientReady, async (readyClient) => {
   Logger.banner(

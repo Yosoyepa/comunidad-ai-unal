@@ -17,6 +17,7 @@ import { AIAssistantService } from '../services/aiAssistantService';
 import { TicketHandler } from '../handlers/ticketHandler';
 import { TriviaService } from '../services/triviaService';
 import { ProjectGenService } from '../services/projectGenService';
+import { DuelService } from '../services/duelService';
 
 export const COMMANDS_DATA = [
   // 1. Preguntar a la IA
@@ -263,7 +264,7 @@ export class SlashCommandHandler {
           });
         }
 
-        duelEmbed.setFooter({ text: 'Vota abajo por el modelo que ofreció la mejor respuesta' });
+        duelEmbed.setFooter({ text: '⏱️ Votación abierta por 2 minutos • Vota abajo por el mejor modelo' });
 
         const voteRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
@@ -278,10 +279,14 @@ export class SlashCommandHandler {
             .setStyle(ButtonStyle.Success)
         );
 
-        await interaction.editReply({
+        const replyMsg = await interaction.editReply({
           embeds: [duelEmbed],
           components: [voteRow]
         });
+
+        if (duel.gemini && duel.groq) {
+          DuelService.registerDuel(replyMsg, prompt, duel.gemini, duel.groq);
+        }
         return;
       }
 

@@ -10,6 +10,7 @@ import {
 import { Logger } from '../utils/logger';
 import { INTERACTIVE_PANELS } from '../config/serverStructure';
 import { TriviaService } from '../services/triviaService';
+import { DuelService } from '../services/duelService';
 
 export class InteractionHandler {
   private static duelVoters = new Map<string, Set<string>>(); // messageId -> Set<userId>
@@ -39,59 +40,10 @@ export class InteractionHandler {
           return;
         }
 
-        // B. Botones de Votación en Duelo de Modelos
+        // B. Botones de Votación en Duelo de Modelos (con temporizador de 2 min)
         if (customId.startsWith('btn_duel_vote:')) {
-          const votedModel = customId.replace('btn_duel_vote:', ''); // 'gemini' | 'groq'
-          const messageId = interaction.message.id;
-
-          let voters = this.duelVoters.get(messageId);
-          if (!voters) {
-            voters = new Set<string>();
-            this.duelVoters.set(messageId, voters);
-          }
-
-          if (voters.has(interaction.user.id)) {
-            await interaction.reply({
-              content: '⚠️ Ya has emitido tu voto en este duelo de modelos.',
-              ephemeral: true
-            });
-            return;
-          }
-
-          voters.add(interaction.user.id);
-
-          // Actualizar etiquetas de botones en el mensaje
-          const currentComponents = interaction.message.components;
-          if (currentComponents.length > 0) {
-            const row = currentComponents[0] as any;
-            const updatedButtons: ButtonBuilder[] = [];
-
-            if (row && row.components) {
-              for (const component of row.components) {
-                if (component.type === 2) { // Button component
-                  const btn = component as any;
-                  let label = btn.label || '';
-                  if (btn.customId === `btn_duel_vote:${votedModel}`) {
-                    const match = label.match(/\((\d+)\)/);
-                    const count = match ? parseInt(match[1], 10) + 1 : 1;
-                    label = label.replace(/\(\d+\)/, `(${count})`);
-                  }
-                  updatedButtons.push(
-                    new ButtonBuilder()
-                      .setCustomId(btn.customId)
-                      .setLabel(label)
-                      .setEmoji(btn.emoji?.name || (btn.customId.includes('gemini') ? '🔵' : '🟠'))
-                      .setStyle(btn.style)
-                  );
-                }
-              }
-
-              const newRow = new ActionRowBuilder<ButtonBuilder>().addComponents(updatedButtons);
-              await interaction.update({ components: [newRow] });
-            }
-          } else {
-            await interaction.reply({ content: '✅ ¡Voto registrado!', ephemeral: true });
-          }
+          const votedModel = customId.replace('btn_duel_vote:', '') as 'gemini' | 'groq';
+          await DuelService.handleVote(interaction, votedModel);
           return;
         }
 
